@@ -211,6 +211,31 @@ namespace FileMonitor
             notifyIcon.Icon = Properties.Resources.file_integrity_monitoring;
 
             //set text
+            setNotifyIconText();
+
+            //context menu
+            ContextMenuStrip ctx = new ContextMenuStrip();
+            ctx.Items.Add("Restart", null, RestartContextItemClicked);
+            ctx.Items.Add("Open Directory", null, (s, e) => System.Diagnostics.Process.Start(watcher.Path));
+            ctx.Items.Add("Exit", null, (s, e) => { Close(); });
+
+            notifyIcon.ContextMenuStrip = ctx;
+
+            notifyIcon.MouseClick += (s, e) => 
+            {
+                if ((e.Button & MouseButtons.Left) != MouseButtons.Left) { return; }
+                System.Diagnostics.Process.Start(watcher.Path);
+                setNotifyIconText();
+            };
+
+            notifyIcon.BalloonTipClicked += (s, _e) => NotifyIcon_BalloonTipClicked();
+
+            notifyIcon.Visible = true;
+        }
+
+        private void setNotifyIconText()
+        {
+            //set text
             notifyIcon.Text = "Monitoring \"";
             int maxPathLength = 63 - notifyIcon.Text.Length;
             string trimmedPath = watcher.Path;
@@ -231,7 +256,7 @@ namespace FileMonitor
                     tempPathText = trimmedPath.Substring(idx) + pathText;
                     trimmedPath = trimmedPath.Substring(0, idx);
                 }
-                if(tempPathText.Length >= maxPathLength)
+                if (tempPathText.Length >= maxPathLength)
                 {
                     break;
                 }
@@ -243,29 +268,10 @@ namespace FileMonitor
             }
 
             notifyIcon.Text += pathText + '\"';
-            if(notifyIcon.Text.Length <= 61)
+            if (notifyIcon.Text.Length <= 61)
             {
                 notifyIcon.Text += "...";
             }
-
-            //context menu
-            ContextMenuStrip ctx = new ContextMenuStrip();
-            ctx.Items.Add("Restart", null, RestartContextItemClicked);
-            ctx.Items.Add("Open Directory", null, (s, e) => System.Diagnostics.Process.Start(watcher.Path));
-            ctx.Items.Add("Exit", null, (s, e) => { Close(); });
-
-            notifyIcon.ContextMenuStrip = ctx;
-
-            notifyIcon.MouseClick += (s, e) => 
-            {
-                if ((e.Button & MouseButtons.Left) != MouseButtons.Left) { return; }
-                System.Diagnostics.Process.Start(watcher.Path);
-                notifyIcon.Text = "Monitoring \"" + watcher.Path.Substring(watcher.Path.LastIndexOf('\\') + 1) + '\"' + "...";
-            };
-
-            notifyIcon.BalloonTipClicked += (s, _e) => NotifyIcon_BalloonTipClicked();
-
-            notifyIcon.Visible = true;
         }
 
         private void endMonitor()
@@ -311,6 +317,7 @@ namespace FileMonitor
             notificationPath = Directory.Exists(e.FullPath) ? e.FullPath : Directory.GetParent(e.FullPath).FullName;
 
             notifyIcon.ShowBalloonTip(30000);
+            notifyIcon.BalloonTipClosed += (s, e_) => setNotifyIconText();
         }
 
         private void NotifyIcon_BalloonTipClicked()
@@ -330,7 +337,7 @@ namespace FileMonitor
                      MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
-            notifyIcon.Text = "Monitoring \"" + watcher.Path.Substring(watcher.Path.LastIndexOf('\\') + 1) + '\"' + "...";
+            setNotifyIconText();
             //watcher.Dispose();
             //notifyIcon.Dispose();
             //Show();
