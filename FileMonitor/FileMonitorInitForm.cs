@@ -270,9 +270,16 @@ namespace FileMonitor
 
         private void endMonitor()
         {
-            notifyIcon.Dispose();
-            watcher.Dispose();
-            removeStartupTask();
+            try
+            {
+                notifyIcon.Dispose();
+                watcher.Dispose();
+                removeStartupTask();
+            }
+            catch(Exception ex)
+            {
+                return;
+            }
         }
 
         private void RestartContextItemClicked(object sender, EventArgs e)
