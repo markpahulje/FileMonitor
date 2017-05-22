@@ -239,12 +239,26 @@ namespace FileMonitor
             notifyIcon.Text = "Monitoring \"";
             int maxPathLength = 63 - notifyIcon.Text.Length;
             string trimmedPath = watcher.Path;
-            string pathText = watcher.Path.Substring(watcher.Path.LastIndexOf('\\'));
-            trimmedPath = trimmedPath.Substring(0, trimmedPath.LastIndexOf('\\'));
+            int lastSlashIdx = watcher.Path.LastIndexOf('\\');
+            if(lastSlashIdx < 0)
+            {
+                lastSlashIdx = watcher.Path.LastIndexOf('/');
+            }
+            string pathText = watcher.Path.Substring(lastSlashIdx);
+            lastSlashIdx = trimmedPath.LastIndexOf('\\');
+            if(lastSlashIdx < 0)
+            {
+                lastSlashIdx = trimmedPath.LastIndexOf('/');
+            }
+            trimmedPath = trimmedPath.Substring(0, lastSlashIdx);
 
             while (true)
             {
                 int idx = trimmedPath.LastIndexOf('\\');
+                if(idx < 0)
+                {
+                    idx = trimmedPath.LastIndexOf('/');
+                }
                 string tempPathText;
                 if (idx < 0)
                 {
@@ -369,8 +383,8 @@ namespace FileMonitor
         private void createStartupTask()
         {
             TaskDefinition td = ts.NewTask();
-            td.RegistrationInfo.Description = "Monitors " + txtFolder.Text + " for files of format " 
-                + txtFilter.Text + " with changes in";
+            td.RegistrationInfo.Description = "Monitors " + txtFolder.Text + " for files of format \"" 
+                + txtFilter.Text + "\" with changes in";
 
             Array notifyFilters = Enum.GetValues(typeof(NotifyFilters));
             foreach (object s in notifyFilters)
@@ -418,6 +432,7 @@ namespace FileMonitor
         {
             taskName = "Monitor_" + (watcher.Path + (txtFilter.Text.Contains("*") ? "" : 
                 '\\' + txtFilter.Text)).Replace('\\', '-') + '_' + (int)watcher.NotifyFilter;
+            taskName = taskName.Replace('/', '-');
             int idx = taskName.IndexOf(':');
             if (idx >= 0)
             {
