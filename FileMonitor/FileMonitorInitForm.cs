@@ -28,17 +28,19 @@ namespace FileMonitor
          btnBrowse.Click += BtnBrowse_Click;
          btnStart.Click += BtnStart_Click;
 
-         FormClosing += FileMonitorInitForm_FormClosing;
+         //FormClosing += FileMonitorInitForm_FormClosing;
 
          checkCommandLine();
       }
 
       private void FileMonitorInitForm_FormClosing(object sender, FormClosingEventArgs e)
       {
+         /*
          if (e.CloseReason == CloseReason.UserClosing)
          {
             endMonitor();
          }
+         */
       }
 
       private void checkCommandLine()
@@ -219,7 +221,7 @@ namespace FileMonitor
          ContextMenuStrip ctx = new ContextMenuStrip();
          ctx.Items.Add("Restart", null, RestartContextItemClicked);
          ctx.Items.Add("Open Directory", null, (s, e) => System.Diagnostics.Process.Start(watcher.Path));
-         ctx.Items.Add("Exit", null, (s, e) => { Close(); });
+         ctx.Items.Add("Exit", null, (s, e) => { endMonitor(); Close(); });
 
          notifyIcon.ContextMenuStrip = ctx;
 
@@ -426,6 +428,8 @@ namespace FileMonitor
          td.Actions.Add(filePath, arguments);
 
          setTaskName();
+
+         td.Settings.ExecutionTimeLimit = new TimeSpan(0);
 
          ts.RootFolder.RegisterTaskDefinition(taskName, td);
       }
