@@ -241,7 +241,7 @@ namespace FileMonitor
       {
          //set text
          notifyIcon.Text = "Monitoring \"";
-         int maxPathLength = 63 - notifyIcon.Text.Length;
+         int maxPathLength = 60 - notifyIcon.Text.Length;
          string trimmedPath = watcher.Path;
          int lastSlashIdx = watcher.Path.LastIndexOf('\\');
          if (lastSlashIdx < 0 || watcher.Path.LastIndexOf('/') > lastSlashIdx)
@@ -286,7 +286,7 @@ namespace FileMonitor
          }
 
          notifyIcon.Text += pathText + '\"';
-         if (notifyIcon.Text.Length <= 61)
+         if (notifyIcon.Text.Length <= 61 && IncludeSubdirs.Checked)
          {
             notifyIcon.Text += "...";
          }
@@ -430,6 +430,8 @@ namespace FileMonitor
          setTaskName();
 
          td.Settings.ExecutionTimeLimit = new TimeSpan(0);
+         td.Settings.StopIfGoingOnBatteries = false;
+         td.Settings.DisallowStartIfOnBatteries = false;
 
          ts.RootFolder.RegisterTaskDefinition(taskName, td);
       }
